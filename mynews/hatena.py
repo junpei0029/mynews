@@ -1,0 +1,139 @@
+# -*- coding: utf-8 -*-
+import urllib2
+import feedparser
+import json
+import sys,re,time
+import csv
+from xml.etree.ElementTree import XML
+import random
+from sets import Set
+
+reload(sys)
+sys.setdefaultencoding("utf-8")
+
+
+r = re.compile('"(http://cdn-ak.b.st-hatena.com/entryimage/.*?)"')
+no_image_url = "http://images-jp.amazon.com/images/G/09/nav2/dp/no-image-no-ciu._SS200_.gif"
+ofname = "url_list.csv"
+
+
+def analyze_hatebu():
+    # Web情報取得の準備
+    opener = urllib2.build_opener()
+    user = "junpei0029"
+
+    # はてなブックマークのfeed情報の取得
+    url_list = []
+    id = 0
+    for i in range(0,200,20):
+        feed_url = "http://b.hatena.ne.jp/" + user + "/rss?of=" + str(i) # はてなAPIに渡すクエリの作成
+        try:
+            response = opener.open(feed_url) # urlオープン
+        except:
+            continue
+        content = response.read() # feed情報の取得
+        feed = feedparser.parse(content) # feedパーサを用いてfeedを解析
+        # entriesがない場合break
+        if feed["entries"] == []:
+            break
+        # urlリストの作成
+        for e in feed["entries"]:
+            try:
+                m = r.search(e["content"][0]["value"])
+                imageurl = m.group(1) if m.group(1) else no_image_url
+                url_list.append([id,e["link"],user,e["hatena_bookmarkcount"],re.sub("[,\"]","",e["title"]),imageurl]) # url_listの作成（titleのカンマとダブルクォーテーションを置換）
+                id += 1
+            except:
+                pass
+        time.sleep(0.05) # アクセス速度の制御
+
+
+    # 対象urlをブックマークしているユーザの抽出
+    user_list = []
+    for i, url in enumerate(url_list):
+        response = opener.open("http://b.hatena.ne.jp/entry/jsonlite/" + url[1]) # はてなAPIによるブックマーク情報の取得
+        content = response.read()
+        tmp = json.loads(content) # jsonの解析
+        # userリストの作成
+        if tmp.get("bookmarks"):
+            for b in tmp.get("bookmarks"):
+                user_list.append([url[0],b["user"]])
+            time.sleep(0.05) # アクセス速度の制御
+
+    # 自分と同じurlをブックマークしている数を集計
+    count_user = {}
+    for i, (id,uname) in enumerate(user_list):
+        if count_user.has_key(uname):
+            count_user[uname] += 1
+        else:
+            count_user[uname] = 1
+
+    # ブックマーク数上位のユーザのブックマークurl情報を取得
+    for uname, count in sorted(count_user.items(), key=lambda x:x[1],reverse=True):
+        print uname, count
+        if uname == user: continue # 自分のidは除く
+        # 直近200件のブックマークurlを取得
+        for i in range(0,200,20):
+            try:
+                feed_url = "http://b.hatena.ne.jp/" + uname + "/rss?of=" + str(i) # feed取得用クエリ
+            except:
+                continue
+            response = opener.open(feed_url) # feed情報の取得
+            content = response.read()
+            feed = feedparser.parse(content) # feed情報の解析
+            if feed["entries"] == []:
+                break
+            for e in feed["entries"]:
+                if [e["link"],uname] in [ [tmp[1],tmp[2]] for tmp in url_list]: continue # 過去に取得した情報は除く
+                try:
+                    m = r.search(e["content"][0]["value"])
+                    imageurl = m.group(1) if m.group(1) else ""
+                    url_list.append([id,e["link"],uname,e["hatena_bookmarkcount"],re.sub("[,\"]","",e["title"]),imageurl])
+                    id += 1
+                except:
+                    pass
+            time.sleep(0.05) # アクセス速度の制御
+        if count < 100: break # 同じブックマーク数が100より少ない場合break
+
+    print len(url_list)
+    # ファイルの出力
+    fout = open(ofname,"w")
+    writer = csv.writer(fout,delimiter=",")
+    writer.writerow(["id","url","user","count","title","imageurl"])
+    for t in url_list:
+        writer.writerow(t)
+    fout.close()
+
+
+
+def data_reader():
+    f = open(ofname, 'rb')
+    data_reader = csv.reader(f)
+    ret = []
+    random_set = Set([])
+
+    for i in xrange(30):
+        random_set.add(random.randint(1, 500))
+
+    print random_set
+
+    for i,data in enumerate(data_reader):
+        if i not in random_set:
+            continue
+        dic = {}
+        dic["id"] = data[0]
+        dic["link"] = data[1]
+        dic["uname"] = data[2]
+        dic["bookmarkcount"] = data[3]
+        dic["title"] = data[4]
+        dic["imageurl"] = data[5]
+        ret.append(dic)
+    print ret
+    return ret
+
+if __name__ == '__main__':
+    #analyze_hatebu()
+    data_reader()
+
+
+
