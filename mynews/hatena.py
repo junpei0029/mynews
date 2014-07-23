@@ -14,7 +14,7 @@ sys.setdefaultencoding("utf-8")
 
 r = re.compile('"(http://cdn-ak.b.st-hatena.com/entryimage/.*?)"')
 no_image_url = "http://images-jp.amazon.com/images/G/09/nav2/dp/no-image-no-ciu._SS200_.gif"
-ofname = "url_list.csv"
+ofname = "mynews/url_list.csv"
 
 
 def analyze_hatebu():
@@ -101,13 +101,12 @@ def analyze_hatebu():
     writer = csv.writer(fout,delimiter=",")
     writer.writerow(["id","url","user","count","title","imageurl"])
     for t in url_list:
-        writer.writerow(t)
+        if t[2] != user:
+            writer.writerow(t)
     fout.close()
 
-
-
 def data_reader():
-    f = open("mynews/url_list.csv", 'rb')
+    f = open(ofname, 'rb')
     data_reader = csv.reader(f)
     ret = []
     random_set = Set([])
