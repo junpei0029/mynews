@@ -107,7 +107,7 @@ def analyze_hatebu():
 
 
 def data_reader():
-    f = open(ofname, 'rb')
+    f = open("mynews/url_list.csv", 'rb')
     data_reader = csv.reader(f)
     ret = []
     random_set = Set([])
