@@ -8,19 +8,28 @@ from xml.etree.ElementTree import XML
 import random
 from sets import Set
 
+
 reload(sys)
 sys.setdefaultencoding("utf-8")
 
 
+
+##################################################################
+# フィールド
+##################################################################
+
 r = re.compile('"(http://cdn-ak.b.st-hatena.com/entryimage/.*?)"')
 no_image_url = "http://images-jp.amazon.com/images/G/09/nav2/dp/no-image-no-ciu._SS200_.gif"
 ofname = "mynews/url_list.csv"
+user = "junpei0029"
 
+##################################################################
+# データ分析
+##################################################################
 
 def analyze_hatebu():
     # Web情報取得の準備
     opener = urllib2.build_opener()
-    user = "junpei0029"
 
     # はてなブックマークのfeed情報の取得
     url_list = []
@@ -101,23 +110,25 @@ def analyze_hatebu():
     writer = csv.writer(fout,delimiter=",")
     writer.writerow(["id","url","user","count","title","imageurl"])
     for t in url_list:
-        if t[2] != user:
-            writer.writerow(t)
+        writer.writerow(t)
     fout.close()
 
-def data_reader():
+
+##################################################################
+# 分析結果読み込み
+##################################################################
+
+def data_reader(myfav_flg=False):
     f = open(ofname, 'rb')
     data_reader = csv.reader(f)
+    temp_list = []
     ret = []
     random_set = Set([])
 
-    for i in xrange(30):
-        random_set.add(random.randint(1, 500))
-
-    print random_set
+    cnt = 0
 
     for i,data in enumerate(data_reader):
-        if i not in random_set:
+        if (myfav_flg and data[2] != user) or (not myfav_flg and data[2] == user):
             continue
         dic = {}
         dic["id"] = data[0]
@@ -126,13 +137,34 @@ def data_reader():
         dic["bookmarkcount"] = data[3]
         dic["title"] = data[4]
         dic["imageurl"] = data[5]
-        ret.append(dic)
+        temp_list.append(dic)
+        cnt = cnt + 1
+
+    while len(random_set) <= 30:
+        random_set.add(random.randint(1, cnt))
+
+    for i in random_set:
+        ret.append(temp_list[i])
+
+    print random_set
     print ret
     return ret
 
+
+##################################################################
+# 分析結果読み込み(自分のお気に入り)
+##################################################################
+
+def data_reader_favorite():
+    return data_reader(myfav_flg=True)
+
+##################################################################
+# メイン
+##################################################################
+
 if __name__ == '__main__':
-    #analyze_hatebu()
-    data_reader()
+    analyze_hatebu()
+    #data_reader()
 
 
 
