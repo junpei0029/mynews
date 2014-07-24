@@ -34,7 +34,7 @@ def analyze_hatebu():
     # はてなブックマークのfeed情報の取得
     url_list = []
     id = 0
-    for i in range(0,200,20):
+    for i in range(0,400,20):
         feed_url = "http://b.hatena.ne.jp/" + user + "/rss?of=" + str(i) # はてなAPIに渡すクエリの作成
         try:
             response = opener.open(feed_url) # urlオープン
@@ -102,7 +102,7 @@ def analyze_hatebu():
                 except:
                     pass
             time.sleep(0.05) # アクセス速度の制御
-        if count < 100: break # 同じブックマーク数が100より少ない場合break
+        if count < 80: break # 同じブックマーク数が100より少ない場合break
 
     print len(url_list)
     # ファイルの出力

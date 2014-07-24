@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="">
     <meta name="author" content="">
-    <link rel="shortcut icon" href="assets/ico/favicon.png">
+    <link rel="shortcut icon" href="{{ url_for('static',filename='ico/favicon.png') }}">
 
     <title>LINK - Agency Theme</title>
 
@@ -67,19 +67,19 @@
 		</div><!-- /container -->
 	</div><!-- /headerwrap -->
 
-	<!-- WELCOME SECTION -->
+    <!-- WELCOME SECTION -->
     <div class="container">
-      <div class="row mt">
-      	<div class="col-lg-8">
-	        <h1>We build websites & apps that people love!</h1>
-	        <p>Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s.</p>
-      	</div>
-      	<div class="col-lg-4">
-      		<p class="pull-right"><br><button type="button" class="btn btn-green">Start Your Project Now</button></p>
-      	</div>
-      </div><!-- /row -->
+        <div class="row mt">
+            <div class="col-lg-8">
+                <h1>We build websites & apps that people love!</h1>
+                <p>Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s.</p>
+            </div>
+            <div class="col-lg-4">
+                <p class="pull-right"><br><button type="button" class="btn btn-green">Start Your Project Now</button></p>
+            </div>
+        </div><!-- /row -->
     </div><!-- /.container -->
-    
+
     <!-- PORTFOLIO SECTION -->
     <div id="portfolio">
         <div class="container">
@@ -282,5 +282,27 @@
 			viewportFactor : 0.2
 		} );
 	</script>
+
+    <!-- スムーズスクロール部分の記述 -->
+    <script>
+    $(function(){
+       // #で始まるアンカーをクリックした場合に処理
+       $('a[href^=#]').click(function() {
+          // スクロールの速度
+          var speed = 800; // ミリ秒
+          // アンカーの値取得
+          var href= $(this).attr("href");
+          // 移動先を取得
+          var target = $(href == "#" || href == "" ? 'html' : href);
+          // 移動先を数値で取得
+          var position = target.offset().top;
+          // スムーススクロール
+          $('body,html').animate({scrollTop:position}, speed, 'swing');
+          return false;
+       });
+    });
+    </script>
+
+
   </body>
 </html>
