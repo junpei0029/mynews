@@ -18,7 +18,7 @@ sys.setdefaultencoding("utf-8")
 
 r = re.compile('"(http://cdn-ak.b.st-hatena.com/entryimage/.*?)"')
 NO_IMAGE_URL = "http://images-jp.amazon.com/images/G/09/nav2/dp/no-image-no-ciu._SS200_.gif"
-OFNAME = "mynews/"
+OFLD = "mynews/csv/"
 user = "junpei0029"
 
 
@@ -108,7 +108,8 @@ def analyze_hatebu(usr=None):
 
     print len(url_list)
     # ファイルの出力
-    fout = open(OFNAME + user + ".csv","w")
+
+    fout = open(OFLD + user + ".csv","w")
     writer = csv.writer(fout,delimiter=",")
     writer.writerow(["id","url","user","count","title","imageurl"])
     for t in url_list:
@@ -124,8 +125,7 @@ def data_reader(myfav_flg=False,usr=None):
 
     user = usr['display_name']
     print user
-
-    f = open(OFNAME + user + ".csv", 'rb')
+    f = open(OFLD + user + ".csv", 'rb')
     data_reader = csv.reader(f)
     temp_list = []
     ret = []
