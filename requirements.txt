@@ -1,3 +1,5 @@
 Flask
 feedparser
 multiprocessing
+urlparse
+oauth2

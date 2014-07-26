@@ -8,10 +8,8 @@ from xml.etree.ElementTree import XML
 import random
 from sets import Set
 
-
 reload(sys)
 sys.setdefaultencoding("utf-8")
-
 
 
 ##################################################################
@@ -19,22 +17,26 @@ sys.setdefaultencoding("utf-8")
 ##################################################################
 
 r = re.compile('"(http://cdn-ak.b.st-hatena.com/entryimage/.*?)"')
-no_image_url = "http://images-jp.amazon.com/images/G/09/nav2/dp/no-image-no-ciu._SS200_.gif"
-ofname = "mynews/url_list.csv"
+NO_IMAGE_URL = "http://images-jp.amazon.com/images/G/09/nav2/dp/no-image-no-ciu._SS200_.gif"
+OFNAME = "mynews/"
 user = "junpei0029"
+
 
 ##################################################################
 # データ分析
 ##################################################################
 
-def analyze_hatebu():
+def analyze_hatebu(usr=None):
+
+    user = usr['display_name']
+
     # Web情報取得の準備
     opener = urllib2.build_opener()
 
     # はてなブックマークのfeed情報の取得
     url_list = []
     id = 0
-    for i in range(0,400,20):
+    for i in range(0,300,20):
         feed_url = "http://b.hatena.ne.jp/" + user + "/rss?of=" + str(i) # はてなAPIに渡すクエリの作成
         try:
             response = opener.open(feed_url) # urlオープン
@@ -49,7 +51,7 @@ def analyze_hatebu():
         for e in feed["entries"]:
             try:
                 m = r.search(e["content"][0]["value"])
-                imageurl = m.group(1) if m.group(1) else no_image_url
+                imageurl = m.group(1) if m.group(1) else NO_IMAGE_URL
                 url_list.append([id,e["link"],user,e["hatena_bookmarkcount"],re.sub("[,\"]","",e["title"]),imageurl]) # url_listの作成（titleのカンマとダブルクォーテーションを置換）
                 id += 1
             except:
@@ -106,7 +108,7 @@ def analyze_hatebu():
 
     print len(url_list)
     # ファイルの出力
-    fout = open(ofname,"w")
+    fout = open(OFNAME + user + ".csv","w")
     writer = csv.writer(fout,delimiter=",")
     writer.writerow(["id","url","user","count","title","imageurl"])
     for t in url_list:
@@ -118,8 +120,12 @@ def analyze_hatebu():
 # 分析結果読み込み
 ##################################################################
 
-def data_reader(myfav_flg=False):
-    f = open(ofname, 'rb')
+def data_reader(myfav_flg=False,usr=None):
+
+    user = usr['display_name']
+    print user
+
+    f = open(OFNAME + user + ".csv", 'rb')
     data_reader = csv.reader(f)
     temp_list = []
     ret = []
@@ -154,16 +160,15 @@ def data_reader(myfav_flg=False):
 ##################################################################
 # 分析結果読み込み(自分のお気に入り)
 ##################################################################
-
-def data_reader_favorite():
-    return data_reader(myfav_flg=True)
+def data_reader_favorite(usr):
+    return data_reader(myfav_flg=True,usr=usr)
 
 ##################################################################
 # メイン
 ##################################################################
 
 if __name__ == '__main__':
-    analyze_hatebu()
+    analyze_hatebu({"display_name":'junpei0029'})
     #data_reader()
 
 
