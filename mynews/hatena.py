@@ -18,7 +18,7 @@ sys.setdefaultencoding("utf-8")
 
 r = re.compile('"(http://cdn-ak.b.st-hatena.com/entryimage/.*?)"')
 NO_IMAGE_URL = "http://images-jp.amazon.com/images/G/09/nav2/dp/no-image-no-ciu._SS200_.gif"
-OFLD = "mynews/csv/"
+OFLD = "csv/"
 user = "junpei0029"
 
 
@@ -155,7 +155,6 @@ def data_reader(myfav_flg=False,usr=None):
     print random_set
     print ret
     return ret
-
 
 ##################################################################
 # 分析結果読み込み(自分のお気に入り)
