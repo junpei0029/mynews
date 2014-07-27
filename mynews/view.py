@@ -12,9 +12,9 @@ from functools import wraps
 
 app = Flask(__name__)
 app.secret_key = 'why would I tell you my secret key?'
-app.config.from_object("config.DevelopConfig")
 
 if not (app.config['CONSUMER_KEY'] and app.config['CONSUMER_SECRET']):
+    app.config.from_object("config.DevelopConfig")
     import config
 
 #hatenaOauth
