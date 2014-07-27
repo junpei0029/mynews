@@ -15,17 +15,20 @@ app.secret_key = 'why would I tell you my secret key?'
 
 print os.environ.get('CONSUMER_KEY')
 
-if not (os.environ.get('CONSUMER_KEY') and os.environ.get('CONSUMER_SECRET')):
+if os.environ.get('CONSUMER_KEY') and os.environ.get('CONSUMER_SECRET'):
+    CONSUMER_KEY = os.environ.get('CONSUMER_KEY')
+    CONSUMER_SECRET = os.environ.get('CONSUMER_SECRET')
+else:
     import config
     app.config.from_object("config.DevelopConfig")
+    CONSUMER_KEY = app.config['CONSUMER_KEY']
+    CONSUMER_SECRET = app.config['CONSUMER_SECRET']
 
 #hatenaOauth
 REQUEST_TOKEN_URL = 'https://www.hatena.com/oauth/initiate'
 ACCESS_TOKEN_URL = 'https://www.hatena.com/oauth/token'
 AUTHENTICATE_URL = 'https://www.hatena.ne.jp/oauth/authorize'
 SCOPE = 'read_public'
-CONSUMER_KEY = app.config['CONSUMER_KEY']
-CONSUMER_SECRET = app.config['CONSUMER_SECRET']
 
 consumer = Consumer(CONSUMER_KEY, CONSUMER_SECRET)
 
