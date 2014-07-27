@@ -13,9 +13,11 @@ from functools import wraps
 app = Flask(__name__)
 app.secret_key = 'why would I tell you my secret key?'
 
-if not (app.config['CONSUMER_KEY'] and app.config['CONSUMER_SECRET']):
-    app.config.from_object("config.DevelopConfig")
+print os.environ.get('CONSUMER_KEY')
+
+if not (os.environ.get('CONSUMER_KEY') and os.environ.get('CONSUMER_SECRET')):
     import config
+    app.config.from_object("config.DevelopConfig")
 
 #hatenaOauth
 REQUEST_TOKEN_URL = 'https://www.hatena.com/oauth/initiate'
