@@ -9,11 +9,13 @@ from flask import request,session,redirect,url_for,g
 import urlparse
 import json
 from functools import wraps
-import config
 
 app = Flask(__name__)
 app.secret_key = 'why would I tell you my secret key?'
 app.config.from_object("config.DevelopConfig")
+
+if not (app.config['CONSUMER_KEY'] and app.config['CONSUMER_SECRET']):
+    import config
 
 #hatenaOauth
 REQUEST_TOKEN_URL = 'https://www.hatena.com/oauth/initiate'

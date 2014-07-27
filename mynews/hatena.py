@@ -18,7 +18,7 @@ sys.setdefaultencoding("utf-8")
 
 r = re.compile('"(http://cdn-ak.b.st-hatena.com/entryimage/.*?)"')
 NO_IMAGE_URL = "http://images-jp.amazon.com/images/G/09/nav2/dp/no-image-no-ciu._SS200_.gif"
-OFLD = "csv/"
+OFLD = "mynews/csv/"
 user = "junpei0029"
 
 
