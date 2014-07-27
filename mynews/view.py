@@ -13,8 +13,6 @@ from functools import wraps
 app = Flask(__name__)
 app.secret_key = 'why would I tell you my secret key?'
 
-print os.environ.get('CONSUMER_KEY')
-
 if os.environ.get('CONSUMER_KEY') and os.environ.get('CONSUMER_SECRET'):
     CONSUMER_KEY = os.environ.get('CONSUMER_KEY')
     CONSUMER_SECRET = os.environ.get('CONSUMER_SECRET')
@@ -40,7 +38,7 @@ def login_required(f):
     def decorated_view(*args,**kwargs):
         user = get_user_inf()
         if not user:
-            return redirect(url_for('login'),next=request.path)
+            return redirect(url_for('login'))
         return f(*args,**kwargs)
     return decorated_view
 
@@ -50,7 +48,7 @@ def login():
     # リクエストトークンの取得
     client = Client(consumer)
     resp, content = client.request('%s?scope=%s&oauth_callback=%s%s' % \
-            (REQUEST_TOKEN_URL, SCOPE, request.host_url, 'on-auth'))
+            (REQUEST_TOKEN_URL, SCOPE, request.host_url,'on-auth'))
     # セッションへリクエストトークンを保存しておく
     session['request_token'] = dict(urlparse.parse_qsl(content))
     # 認証用URLにリダイレクトする
@@ -99,6 +97,7 @@ def analyze():
 #    return render_template('index.html' ,url_list=url_list,user=user)
 
 @app.route('/favorite')
+@login_required
 def favorite():
     user = get_user_inf()
     url_list = htn.data_reader_favorite(usr=user)
@@ -109,13 +108,15 @@ def favorite():
 # methods
 ##################################################################
 def get_user_inf():
-    user = {'no_user':None}
+    user = {}
     access_token = session.get('access_token')
     if access_token:
         # access_tokenなどを使ってAPIにアクセスする
         token = Token(access_token['oauth_token'], access_token['oauth_token_secret'])
         client = Client(consumer, token)
         resp, content = client.request('http://n.hatena.com/applications/my.json')
+        print content
+        print resp
         user = json.loads(content)
     return user
 
