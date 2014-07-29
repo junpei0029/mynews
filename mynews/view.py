@@ -82,6 +82,7 @@ def on_auth():
 @app.route('/')
 @login_required
 def index():
+    print  "index start"
     user = get_user_inf()
     url_list = htn.data_reader(usr=user)
     return render_template('index.html' ,url_list=url_list,user=user)
@@ -89,16 +90,18 @@ def index():
 @app.route('/analyze')
 @login_required
 def analyze():
+    print  "analyze start"
     #非同期実行
-    process = Process(target=htn.analyze_hatebu)
+    user = get_user_inf()
+    process = Process(target=htn.analyze_hatebu,args=(user,))
     process.start()
-#    user = get_user_inf()
-#    url_list = htn.data_reader(usr=user)
-#    return render_template('index.html' ,url_list=url_list,user=user)
+    url_list = htn.data_reader(usr=user)
+    return render_template('index.html' ,url_list=url_list,user=user)
 
 @app.route('/favorite')
 @login_required
 def favorite():
+    print  "favorite start"
     user = get_user_inf()
     url_list = htn.data_reader_favorite(usr=user)
     return render_template('index.html' ,url_list=url_list,user=user)
@@ -115,8 +118,6 @@ def get_user_inf():
         token = Token(access_token['oauth_token'], access_token['oauth_token_secret'])
         client = Client(consumer, token)
         resp, content = client.request('http://n.hatena.com/applications/my.json')
-        print content
-        print resp
         user = json.loads(content)
     return user
 
