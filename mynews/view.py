@@ -84,8 +84,9 @@ def on_auth():
 def index():
     print  "index start"
     user = get_user_inf()
+    last_upd_time = htn.get_last_upd_time(user)
     url_list = htn.data_reader(usr=user)
-    return render_template('index.html' ,url_list=url_list,user=user)
+    return render_template('index.html' ,url_list=url_list,user=user,last_upd_time=last_upd_time)
 
 @app.route('/analyze')
 @login_required
@@ -95,16 +96,18 @@ def analyze():
     user = get_user_inf()
     process = Process(target=htn.analyze_hatebu,args=(user,))
     process.start()
+    last_upd_time = htn.get_last_upd_time(user)
     url_list = htn.data_reader(usr=user)
-    return render_template('index.html' ,url_list=url_list,user=user)
+    return render_template('index.html' ,url_list=url_list,user=user,last_upd_time=last_upd_time)
 
 @app.route('/favorite')
 @login_required
 def favorite():
     print  "favorite start"
     user = get_user_inf()
+    last_upd_time = htn.get_last_upd_time(user)
     url_list = htn.data_reader_favorite(usr=user)
-    return render_template('index.html' ,url_list=url_list,user=user)
+    return render_template('index.html' ,url_list=url_list,user=user,last_upd_time=last_upd_time)
 
 
 ##################################################################

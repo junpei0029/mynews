@@ -7,6 +7,8 @@ import csv
 from xml.etree.ElementTree import XML
 import random
 from sets import Set
+import os
+import datetime
 
 reload(sys)
 sys.setdefaultencoding("utf-8")
@@ -156,6 +158,7 @@ def data_reader(myfav_flg=False,usr=None):
     print ret
     return ret
 
+
 ##################################################################
 # 分析結果読み込み(自分のお気に入り)
 ##################################################################
@@ -163,12 +166,27 @@ def data_reader_favorite(usr):
     return data_reader(myfav_flg=True,usr=usr)
 
 ##################################################################
+# 最終更新日時
+##################################################################
+def get_last_upd_time(usr):
+    user = usr['display_name']
+    print user
+    stat = os.stat(OFLD + user + ".csv")
+    last_modified = stat.st_mtime
+    dt = datetime.datetime.fromtimestamp(last_modified)
+    print(dt.strftime("%Y-%m-%d %H:%M:%S"))  # Print 2011-05-30 17:48:12
+
+    return dt.strftime("%Y-%m-%d %H:%M:%S")
+
+##################################################################
 # メイン
 ##################################################################
 
 if __name__ == '__main__':
-    analyze_hatebu({"display_name":'junpei0029'})
+    #analyze_hatebu({"display_name":'junpei0029'})
     #data_reader()
+    get_last_upd_time({"display_name":'junpei0029'})
+
 
 
 
