@@ -9,6 +9,7 @@ import random
 from sets import Set
 import os
 import datetime
+import bayes
 
 reload(sys)
 sys.setdefaultencoding("utf-8")
@@ -123,11 +124,16 @@ def analyze_hatebu(usr=None):
 # 分析結果読み込み
 ##################################################################
 
-def data_reader(myfav_flg=False,usr=None):
+def data_reader(mybookmarkflg=False,usr=None):
 
     user = usr['display_name']
     print user
-    f = open(OFLD + user + ".csv", 'rb')
+
+    path = OFLD + user + ".csv"
+    if not os.path.exists(path):
+        return []
+
+    f = open(path, 'rb')
     data_reader = csv.reader(f)
     temp_list = []
     ret = []
@@ -136,7 +142,7 @@ def data_reader(myfav_flg=False,usr=None):
     cnt = 0
 
     for i,data in enumerate(data_reader):
-        if (myfav_flg and data[2] != user) or (not myfav_flg and data[2] == user):
+        if (mybookmarkflg and data[2] != user) or (not mybookmarkflg and data[2] == user):
             continue
         dic = {}
         dic["id"] = data[0]
@@ -148,11 +154,14 @@ def data_reader(myfav_flg=False,usr=None):
         temp_list.append(dic)
         cnt = cnt + 1
 
+    print cnt
+
     while len(random_set) <= 30:
-        random_set.add(random.randint(1, cnt))
+        random_set.add(random.randint(1, cnt-1))
 
     for i in random_set:
-        ret.append(temp_list[i])
+        if len(temp_list) > i:
+            ret.append(temp_list[i])
 
     print random_set
     print ret
@@ -162,8 +171,8 @@ def data_reader(myfav_flg=False,usr=None):
 ##################################################################
 # 分析結果読み込み(自分のお気に入り)
 ##################################################################
-def data_reader_favorite(usr):
-    return data_reader(myfav_flg=True,usr=usr)
+def data_reader_bookmark(usr):
+    return data_reader(mybookmarkflg=True,usr=usr)
 
 ##################################################################
 # 最終更新日時
@@ -171,12 +180,122 @@ def data_reader_favorite(usr):
 def get_last_upd_time(usr):
     user = usr['display_name']
     print user
-    stat = os.stat(OFLD + user + ".csv")
+
+    path = OFLD + user + ".csv"
+    if not os.path.exists(path):
+        return
+    stat = os.stat(path)
     last_modified = stat.st_mtime
     dt = datetime.datetime.fromtimestamp(last_modified)
     print(dt.strftime("%Y-%m-%d %H:%M:%S"))  # Print 2011-05-30 17:48:12
 
     return dt.strftime("%Y-%m-%d %H:%M:%S")
+
+##################################################################
+# データ削除（テスト用）
+##################################################################
+def del_data(usr):
+    user = usr['display_name']
+    print user
+    path = OFLD + user + ".csv"
+    if os.path.exists(path):
+        print "delete :" + path
+        os.remove(path)
+    else:
+        print "already delete :" + path
+
+##################################################################
+# 人気
+##################################################################
+def popular_data(usr):
+    user = usr['display_name']
+    print user
+
+    url_list = []
+    id = 0
+    feed_url = "http://feeds.feedburner.com/hatena/b/hotentry"
+
+    # Web情報取得の準備
+    opener = urllib2.build_opener()
+    response = opener.open(feed_url) # urlオープン
+    content = response.read() # feed情報の取得
+    feed = feedparser.parse(content) # feedパーサを用いてfeedを解析
+
+    # urlリストの作成
+    for e in feed["entries"]:
+        try:
+            m = r.search(e["content"][0]["value"])
+            imageurl = m.group(1) if m.group(1) else NO_IMAGE_URL
+            dic = {}
+            dic["id"] = id
+            dic["link"] = e["link"]
+            dic["uname"] = user
+            dic["bookmarkcount"] = e['hatena_bookmarkcount']
+            dic["title"] = re.sub("[,\"]","",e["title"])
+            dic["imageurl"] = imageurl
+            url_list.append(dic)
+            id += 1
+        except:
+            pass
+    return url_list
+
+##################################################################
+# ベイズ
+##################################################################
+def bayes_data(usr):
+    user = usr['display_name']
+    print user
+
+    url_list = []
+    id = 0
+    feed_url = "http://feeds.feedburner.com/hatena/b/hotentry"
+
+    # Web情報取得の準備
+    opener = urllib2.build_opener()
+    response = opener.open(feed_url) # urlオープン
+    content = response.read() # feed情報の取得
+    feed = feedparser.parse(content) # feedパーサを用いてfeedを解析
+
+    # urlリストの作成
+    for e in feed["entries"]:
+        try:
+            m = r.search(e["content"][0]["value"])
+            imageurl = m.group(1) if m.group(1) else NO_IMAGE_URL
+            dic = {}
+            dic["id"] = id
+            dic["link"] = e["link"]
+            dic["uname"] = user
+            dic["bookmarkcount"] = e['hatena_bookmarkcount']
+            dic["title"] = re.sub("[,\"]","",e["title"])
+            dic["imageurl"] = imageurl
+            url_list.append(dic)
+            id += 1
+        except:
+            pass
+
+    targets = [data["title"] for data in url_list]
+
+    print "targets:%s" %(targets)
+
+    ret = bayes.judge_target(targets)
+
+    print "ret:%s" %(ret)
+
+    ret1 = []
+    ret2 = []
+
+    for i in ret:
+        print "i:%s" %(i)
+        for j in url_list:
+            if i[1] == j["title"]:
+                if i[0] == 'yes':
+                    j["title"] = '［興味あり］' + i[1]
+                    ret1.append(j)
+                else:
+                    j["title"] = '［興味なし］' + i[1]
+                    ret2.append(j)
+    return ret1,ret2
+
 
 ##################################################################
 # メイン
@@ -185,8 +304,8 @@ def get_last_upd_time(usr):
 if __name__ == '__main__':
     #analyze_hatebu({"display_name":'junpei0029'})
     #data_reader()
-    get_last_upd_time({"display_name":'junpei0029'})
-
+    #get_last_upd_time({"display_name":'junpei0029'})
+    bayes_data({"display_name":'junpei0029'})
 
 
 

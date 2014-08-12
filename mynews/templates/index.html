@@ -39,10 +39,12 @@
             <h1 class="logo"><a href="/">{{ user.display_name }}</a></h1>
             <h1 class="logo"><a href="/">{{ last_upd_time }}</a></h1>
 			<i class="fa fa-arrow-right menu-close"></i>
-			<a href="/">Home</a>
-			<a href="/favorite">favorite</a>
-			<a href="/analyze">Analyze</a>
-			<a href="/logout">Logout</a>
+			<a href="/">ホーム</a>
+			<a href="/bookmark">ブックマーク</a>
+			<a href="/favorite">おすすめ</a>
+			<a href="/popular">人気</a>
+			<a href="/analyze">最新化</a>
+			<a href="/logout">ログアウト</a>
 			<a href="#"><i class="fa fa-facebook"></i></a>
 			<a href="#"><i class="fa fa-twitter"></i></a>
 			<a href="#"><i class="fa fa-dribbble"></i></a>
@@ -75,7 +77,7 @@
                 <p>Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s.</p>
             </div>
             <div class="col-lg-4">
-                <p class="pull-right"><br><button type="button" class="btn btn-green">Start Your Project Now</button></p>
+                <p class="pull-right"><br><button type="button" class="btn btn-green codebtn">興味なしを表示する</button></p>
             </div>
         </div><!-- /row -->
     </div><!-- /.container -->
@@ -84,11 +86,20 @@
     <div id="portfolio">
         <div class="container">
 	    	<div class="row mt">
-				<ul class="grid effect-2" id="grid">
-                    {% for item in url_list %}
-                    <li> {{ item.title }} <a href="{{ item.link }}" target="_blank"><img src="{{ item.imageurl }}"></a></li>
-                    {% endfor %}
-				</ul>
+                <div class="content1">
+                    <ul class="grid effect-2" id="grid">
+                        {% for item in url_list %}
+                        <li> {{ item.title }} <a href="{{ item.link }}" target="_blank"><img src="{{ item.imageurl }}"></a></li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                <div class="content2">
+                    <ul class="grid effect-2" id="grid">
+                        {% for item in url_list_2 %}
+                        <li> {{ item.title }} <a href="{{ item.link }}" target="_blank"><img src="{{ item.imageurl }}"></a></li>
+                        {% endfor %}
+                    </ul>
+                </div>
 	    	</div><!-- row -->
 	    </div><!-- container -->
     </div><!-- portfolio -->
@@ -282,6 +293,26 @@
 			viewportFactor : 0.2
 		} );
 	</script>
+
+    <script type="text/javascript">
+        $(".content2").hide();
+        var flg = "close";
+        $(".codebtn").click(function(){
+            $(".content").slideToggle();
+            if(flg == "close"){
+                $(this).text("興味ありを表示する");
+                flg = "open";
+                $(".content1").hide();
+                $(".content2").show();
+            }else{
+                $(this).text("興味なしを表示する");
+                flg = "close";
+                $(".content1").show();
+                $(".content2").hide();
+            }
+        });
+    </script>
+
 
     <!-- スムーズスクロール部分の記述 -->
     <script>

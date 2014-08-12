@@ -44,7 +44,6 @@ def login_required(f):
 
 @app.before_request
 def load_user():
-    print 'load_user'
     user = get_user_inf()
     if user:
         g.user = user
@@ -62,7 +61,6 @@ def login():
             (REQUEST_TOKEN_URL, SCOPE, request.host_url,'on-auth'))
     # セッションへリクエストトークンを保存しておく
     session['request_token'] = dict(urlparse.parse_qsl(content))
-    print session['request_token']
     # 認証用URLにリダイレクトする
     return redirect('%s?oauth_token=%s' % (AUTHENTICATE_URL, session['request_token']['oauth_token']))
 
@@ -94,7 +92,7 @@ def on_auth():
 @app.route('/')
 @login_required
 def index():
-    print  "index start"
+    print "index start"
     user = g.user
     last_upd_time = htn.get_last_upd_time(user)
     url_list = htn.data_reader(usr=user)
@@ -103,7 +101,7 @@ def index():
 @app.route('/analyze')
 @login_required
 def analyze():
-    print  "analyze start"
+    print "analyze start"
     #非同期実行
     user = g.user
     process = Process(target=htn.analyze_hatebu,args=(user,))
@@ -112,15 +110,40 @@ def analyze():
     url_list = htn.data_reader(usr=user)
     return render_template('index.html' ,url_list=url_list,user=user,last_upd_time=last_upd_time)
 
+@app.route('/bookmark')
+@login_required
+def bookmark():
+    print "bookmark start"
+    user = g.user
+    last_upd_time = htn.get_last_upd_time(user)
+    url_list = htn.data_reader_bookmark(usr=user)
+    return render_template('index.html' ,url_list=url_list,user=user,last_upd_time=last_upd_time)
+
 @app.route('/favorite')
 @login_required
 def favorite():
-    print  "favorite start"
+    print "favorite start"
     user = g.user
     last_upd_time = htn.get_last_upd_time(user)
-    url_list = htn.data_reader_favorite(usr=user)
-    return render_template('index.html' ,url_list=url_list,user=user,last_upd_time=last_upd_time)
+    url_list,url_list_2 = htn.bayes_data(usr=user)
+    return render_template('index.html' ,url_list=url_list,url_list_2=url_list_2,user=user,last_upd_time=last_upd_time)
 
+@app.route('/del_data')
+@login_required
+def del_data():
+    print "del_data start"
+    user = g.user
+    htn.del_data(usr=user)
+    return render_template('index.html' ,user=user)
+
+@app.route('/popular')
+@login_required
+def latest():
+    print "popular start"
+    user = g.user
+    last_upd_time = htn.get_last_upd_time(user)
+    url_list = htn.popular_data(usr=user)
+    return render_template('index.html' ,url_list=url_list,user=user,last_upd_time=last_upd_time)
 
 ##################################################################
 # methods
