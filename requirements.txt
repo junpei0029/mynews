@@ -3,3 +3,4 @@ feedparser
 multiprocessing
 oauth2
 BeautifulSoup
+numpy
