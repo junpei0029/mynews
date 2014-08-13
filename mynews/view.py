@@ -136,13 +136,13 @@ def del_data():
     htn.del_data(usr=user)
     return render_template('index.html' ,user=user)
 
-@app.route('/popular')
+@app.route('/rss/<path:category>')
 @login_required
-def latest():
-    print "popular start"
+def rss(category):
+    print "rss start"
     user = g.user
     last_upd_time = htn.get_last_upd_time(user)
-    url_list = htn.popular_data(usr=user)
+    url_list = htn.get_rss_data(usr=user,category=category)
     return render_template('index.html' ,url_list=url_list,user=user,last_upd_time=last_upd_time)
 
 ##################################################################

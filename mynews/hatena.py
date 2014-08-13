@@ -23,7 +23,11 @@ r = re.compile('"(http://cdn-ak.b.st-hatena.com/entryimage/.*?)"')
 NO_IMAGE_URL = "http://images-jp.amazon.com/images/G/09/nav2/dp/no-image-no-ciu._SS200_.gif"
 OFLD = "mynews/csv/"
 user = "junpei0029"
-
+RSS_URL = {'popular':'http://feeds.feedburner.com/hatena/b/hotentry',
+            'it':'http://b.hatena.ne.jp/hotentry/it.rss',
+            'knowledge':'http://b.hatena.ne.jp/hotentry/knowledge.rss',
+            'life':'http://b.hatena.ne.jp/hotentry/life.rss',
+            }
 
 ##################################################################
 # データ分析
@@ -205,39 +209,19 @@ def del_data(usr):
         print "already delete :" + path
 
 ##################################################################
-# 人気
+# rss記事取得
 ##################################################################
-def popular_data(usr):
+def get_rss_data(usr,category):
     user = usr['display_name']
     print user
 
     url_list = []
     id = 0
-    feed_url = "http://feeds.feedburner.com/hatena/b/hotentry"
+    feed_url = RSS_URL[category]
+    url_list,id = get_feed_list(feed_url)
 
-    # Web情報取得の準備
-    opener = urllib2.build_opener()
-    response = opener.open(feed_url) # urlオープン
-    content = response.read() # feed情報の取得
-    feed = feedparser.parse(content) # feedパーサを用いてfeedを解析
-
-    # urlリストの作成
-    for e in feed["entries"]:
-        try:
-            m = r.search(e["content"][0]["value"])
-            imageurl = m.group(1) if m.group(1) else NO_IMAGE_URL
-            dic = {}
-            dic["id"] = id
-            dic["link"] = e["link"]
-            dic["uname"] = user
-            dic["bookmarkcount"] = e['hatena_bookmarkcount']
-            dic["title"] = re.sub("[,\"]","",e["title"])
-            dic["imageurl"] = imageurl
-            url_list.append(dic)
-            id += 1
-        except:
-            pass
     return url_list
+
 
 ##################################################################
 # ベイズ
@@ -248,30 +232,9 @@ def bayes_data(usr):
 
     url_list = []
     id = 0
-    feed_url = "http://feeds.feedburner.com/hatena/b/hotentry"
+    feed_url = RSS_URL['popular']
 
-    # Web情報取得の準備
-    opener = urllib2.build_opener()
-    response = opener.open(feed_url) # urlオープン
-    content = response.read() # feed情報の取得
-    feed = feedparser.parse(content) # feedパーサを用いてfeedを解析
-
-    # urlリストの作成
-    for e in feed["entries"]:
-        try:
-            m = r.search(e["content"][0]["value"])
-            imageurl = m.group(1) if m.group(1) else NO_IMAGE_URL
-            dic = {}
-            dic["id"] = id
-            dic["link"] = e["link"]
-            dic["uname"] = user
-            dic["bookmarkcount"] = e['hatena_bookmarkcount']
-            dic["title"] = re.sub("[,\"]","",e["title"])
-            dic["imageurl"] = imageurl
-            url_list.append(dic)
-            id += 1
-        except:
-            pass
+    url_list,id = get_feed_list(feed_url)
 
     targets = [data["title"] for data in url_list]
 
@@ -295,6 +258,39 @@ def bayes_data(usr):
                     j["title"] = '［興味なし］' + i[1]
                     ret2.append(j)
     return ret1,ret2
+
+##################################################################
+# フィード取得
+##################################################################
+def get_feed_list(feed_url):
+
+    url_list = []
+    id = 0
+
+    # Web情報取得の準備
+    opener = urllib2.build_opener()
+    response = opener.open(feed_url) # urlオープン
+    content = response.read() # feed情報の取得
+    feed = feedparser.parse(content) # feedパーサを用いてfeedを解析
+
+    # urlリストの作成
+    for e in feed["entries"]:
+        try:
+            m = r.search(e["content"][0]["value"])
+            imageurl = m.group(1) if m.group(1) else NO_IMAGE_URL
+            dic = {}
+            dic["id"] = id
+            dic["link"] = e["link"]
+            dic["uname"] = user
+            dic["bookmarkcount"] = e['hatena_bookmarkcount']
+            dic["title"] = re.sub("[,\"]","",e["title"])
+            dic["imageurl"] = imageurl
+            url_list.append(dic)
+            id += 1
+        except:
+            pass
+
+    return url_list,id
 
 
 ##################################################################
