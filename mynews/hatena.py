@@ -10,6 +10,9 @@ from sets import Set
 import os
 import datetime
 import bayes
+from jubatus.classifier.client import Classifier
+from jubatus.classifier.types import LabeledDatum
+from jubatus.common import Datum
 
 reload(sys)
 sys.setdefaultencoding("utf-8")
@@ -21,13 +24,19 @@ sys.setdefaultencoding("utf-8")
 
 r = re.compile('"(http://cdn-ak.b.st-hatena.com/entryimage/.*?)"')
 NO_IMAGE_URL = "http://images-jp.amazon.com/images/G/09/nav2/dp/no-image-no-ciu._SS200_.gif"
-OFLD = "mynews/csv/"
+OFLD = "mynews/csv/train_data_"
 user = "junpei0029"
 RSS_URL = {'popular':'http://feeds.feedburner.com/hatena/b/hotentry',
             'it':'http://b.hatena.ne.jp/hotentry/it.rss',
             'knowledge':'http://b.hatena.ne.jp/hotentry/knowledge.rss',
             'life':'http://b.hatena.ne.jp/hotentry/life.rss',
+            'social':'http://b.hatena.ne.jp/hotentry/social.rss',
+            'fun':'http://b.hatena.ne.jp/hotentry/fun.rss',
+            'entertainment':'http://b.hatena.ne.jp/hotentry/entertainment.rss',
+            'game':'http://b.hatena.ne.jp/hotentry/game.rss',
             }
+
+
 
 ##################################################################
 # データ分析
@@ -59,70 +68,70 @@ def analyze_hatebu(usr=None):
             try:
                 m = r.search(e["content"][0]["value"])
                 imageurl = m.group(1) if m.group(1) else NO_IMAGE_URL
-                url_list.append([id,e["link"],user,e["hatena_bookmarkcount"],re.sub("[,\"]","",e["title"]),imageurl]) # url_listの作成（titleのカンマとダブルクォーテーションを置換）
+                url_list.append([id,user,'yes',re.sub("[,\"]","",e["title"]),e["link"],e["hatena_bookmarkcount"],imageurl]) # url_listの作成（titleのカンマとダブルクォーテーションを置換）
                 id += 1
             except:
                 pass
-        time.sleep(0.05) # アクセス速度の制御
+        time.sleep(0.03) # アクセス速度の制御
 
 
     # 対象urlをブックマークしているユーザの抽出
-    user_list = []
-    for i, url in enumerate(url_list):
-        response = opener.open("http://b.hatena.ne.jp/entry/jsonlite/" + url[1]) # はてなAPIによるブックマーク情報の取得
-        content = response.read()
-        tmp = json.loads(content) # jsonの解析
-        # userリストの作成
-        if tmp.get("bookmarks"):
-            for b in tmp.get("bookmarks"):
-                user_list.append([url[0],b["user"]])
-            time.sleep(0.05) # アクセス速度の制御
-
-    # 自分と同じurlをブックマークしている数を集計
-    count_user = {}
-    for i, (id,uname) in enumerate(user_list):
-        if count_user.has_key(uname):
-            count_user[uname] += 1
-        else:
-            count_user[uname] = 1
-
-    # ブックマーク数上位のユーザのブックマークurl情報を取得
-    for uname, count in sorted(count_user.items(), key=lambda x:x[1],reverse=True):
-        print uname, count
-        if uname == user: continue # 自分のidは除く
-        # 直近200件のブックマークurlを取得
-        for i in range(0,200,20):
-            try:
-                feed_url = "http://b.hatena.ne.jp/" + uname + "/rss?of=" + str(i) # feed取得用クエリ
-            except:
-                continue
-            response = opener.open(feed_url) # feed情報の取得
-            content = response.read()
-            feed = feedparser.parse(content) # feed情報の解析
-            if feed["entries"] == []:
-                break
-            for e in feed["entries"]:
-                if [e["link"],uname] in [ [tmp[1],tmp[2]] for tmp in url_list]: continue # 過去に取得した情報は除く
-                try:
-                    m = r.search(e["content"][0]["value"])
-                    imageurl = m.group(1) if m.group(1) else ""
-                    url_list.append([id,e["link"],uname,e["hatena_bookmarkcount"],re.sub("[,\"]","",e["title"]),imageurl])
-                    id += 1
-                except:
-                    pass
-            time.sleep(0.05) # アクセス速度の制御
-        if count < 80: break # 同じブックマーク数が100より少ない場合break
+#    user_list = []
+#    for i, url in enumerate(url_list):
+#        response = opener.open("http://b.hatena.ne.jp/entry/jsonlite/" + url[1]) # はてなAPIによるブックマーク情報の取得
+#        content = response.read()
+#        tmp = json.loads(content) # jsonの解析
+#        # userリストの作成
+#        if tmp.get("bookmarks"):
+#            for b in tmp.get("bookmarks"):
+#                user_list.append([url[0],b["user"]])
+#            time.sleep(0.05) # アクセス速度の制御
+#
+#    # 自分と同じurlをブックマークしている数を集計
+#    count_user = {}
+#    for i, (id,uname) in enumerate(user_list):
+#        if count_user.has_key(uname):
+#            count_user[uname] += 1
+#        else:
+#            count_user[uname] = 1
+#
+#    # ブックマーク数上位のユーザのブックマークurl情報を取得
+#    for uname, count in sorted(count_user.items(), key=lambda x:x[1],reverse=True):
+#        print uname, count
+#        if uname == user: continue # 自分のidは除く
+#        # 直近200件のブックマークurlを取得
+#        for i in range(0,200,20):
+#            try:
+#                feed_url = "http://b.hatena.ne.jp/" + uname + "/rss?of=" + str(i) # feed取得用クエリ
+#            except:
+#                continue
+#            response = opener.open(feed_url) # feed情報の取得
+#            content = response.read()
+#            feed = feedparser.parse(content) # feed情報の解析
+#            if feed["entries"] == []:
+#                break
+#            for e in feed["entries"]:
+#                if [e["link"],uname] in [ [tmp[1],tmp[2]] for tmp in url_list]: continue # 過去に取得した情報は除く
+#                try:
+#                    m = r.search(e["content"][0]["value"])
+#                    imageurl = m.group(1) if m.group(1) else ""
+#                    url_list.append([id,e["link"],uname,e["hatena_bookmarkcount"],re.sub("[,\"]","",e["title"]),imageurl])
+#                    id += 1
+#                except:
+#                    pass
+#            time.sleep(0.05) # アクセス速度の制御
+#        if count < 80: break # 同じブックマーク数が100より少ない場合break
 
     print len(url_list)
     # ファイルの出力
 
     fout = open(OFLD + user + ".csv","w")
     writer = csv.writer(fout,delimiter=",")
-    writer.writerow(["id","url","user","count","title","imageurl"])
+    #writer.writerow(["id","url","user","count","title","imageurl"])
     for t in url_list:
         writer.writerow(t)
     fout.close()
-
+    print 'anylaze finish'
 
 ##################################################################
 # 分析結果読み込み
@@ -134,8 +143,9 @@ def data_reader(mybookmarkflg=False,usr=None):
     print user
 
     path = OFLD + user + ".csv"
+    print path
     if not os.path.exists(path):
-        return []
+        return get_rss_data(usr,'popular')
 
     f = open(path, 'rb')
     data_reader = csv.reader(f)
@@ -144,17 +154,17 @@ def data_reader(mybookmarkflg=False,usr=None):
     random_set = Set([])
 
     cnt = 0
-
     for i,data in enumerate(data_reader):
-        if (mybookmarkflg and data[2] != user) or (not mybookmarkflg and data[2] == user):
+        if (mybookmarkflg and data[1] != user):
             continue
         dic = {}
         dic["id"] = data[0]
-        dic["link"] = data[1]
-        dic["uname"] = data[2]
-        dic["bookmarkcount"] = data[3]
-        dic["title"] = data[4]
-        dic["imageurl"] = data[5]
+        dic["uname"] = data[1]
+        dic["category"] = data[2]
+        dic["title"] = data[3]
+        dic["link"] = data[4]
+        dic["bookmarkcount"] = data[5]
+        dic["imageurl"] = data[6]
         temp_list.append(dic)
         cnt = cnt + 1
 
@@ -208,6 +218,29 @@ def del_data(usr):
     else:
         print "already delete :" + path
 
+
+##################################################################
+# ユーザ判断追加
+##################################################################
+def decide_interest(usr,li):
+    print 'hatena.decide_interest'
+
+    user = usr['display_name']
+    li.update({"id":99999 , "uname":user , "bookmarkcount":1})
+
+    category = 'yes' if li['interestFlg'] == '1' else 'no'
+    row = [99999,li['uname'],category,li['title'],li['link'],1,li['imageurl']]
+
+    print row
+    path = OFLD + user + ".csv"
+    if not os.path.exists(path):
+        return
+    fout = open(path,"a")
+    writer = csv.writer(fout,delimiter=",")
+    writer.writerow(row)
+    fout.close()
+    return data_reader(usr=usr)
+
 ##################################################################
 # rss記事取得
 ##################################################################
@@ -218,7 +251,20 @@ def get_rss_data(usr,category):
     url_list = []
     id = 0
     feed_url = RSS_URL[category]
-    url_list,id = get_feed_list(feed_url)
+    url_list = get_feed_list(feed_url)
+
+    return url_list
+
+
+##################################################################
+# rss記事取得(複数)
+##################################################################
+def get_rss_data_from_catlist(usr,category_list):
+    url_list = []
+
+    for cat in category_list:
+        url_list.extend(get_rss_data(usr,cat))
+        time.sleep(0.01) # アクセス速度の制御
 
     return url_list
 
@@ -231,22 +277,15 @@ def bayes_data(usr):
     print user
 
     url_list = []
-    id = 0
     feed_url = RSS_URL['popular']
-
-    url_list,id = get_feed_list(feed_url)
-
+    url_list = get_feed_list(feed_url)
     targets = [data["title"] for data in url_list]
-
     print "targets:%s" %(targets)
-
     ret = bayes.judge_target(targets)
-
     print "ret:%s" %(ret)
 
     ret1 = []
     ret2 = []
-
     for i in ret:
         print "i:%s" %(i)
         for j in url_list:
@@ -257,6 +296,85 @@ def bayes_data(usr):
                 else:
                     j["title"] = '［興味なし］' + i[1]
                     ret2.append(j)
+    return ret1,ret2
+
+##################################################################
+# jubatus
+##################################################################
+def parse_args():
+    from optparse import OptionParser, OptionValueError
+    p = OptionParser()
+    p.add_option('-s', '--server_ip', action='store',
+                 dest='server_ip', type='string', default='127.0.0.1')
+    p.add_option('-p', '--server_port', action='store',
+                 dest='server_port', type='int', default='9199')
+    p.add_option('-n', '--name', action='store',
+                 dest='name', type='string', default='tutorial')
+    return p.parse_args()
+
+def get_most_likely(estm):
+    ans = None
+    prob = None
+    result = {}
+    result[0] = ''
+    result[1] = 0
+    for res in estm:
+        if prob == None or res.score > prob :
+            ans = res.label
+            prob = res.score
+            result[0] = ans
+            result[1] = prob
+    return result
+
+def get_classify_data(usr):
+
+    user = usr['display_name']
+    print user
+
+    options, remainder = parse_args()
+    classifier = Classifier(options.server_ip,options.server_port, options.name, 10.0)
+
+    #train
+    path = OFLD + user + ".csv"
+    fb = open(path, 'rb')
+    data_reader = csv.reader(fb)
+    for i,data in enumerate(data_reader):
+        label = data[2]
+        dat = data[3]
+        datum = Datum({"message": dat})
+        classifier.train([LabeledDatum(label, datum)])
+
+    url_list = []
+    url_list = get_rss_data_from_catlist(usr,['social','fun','entertainment','game'])
+    for data in url_list:
+        title = data["title"]
+        datum = Datum({"message": title})
+        classifier.train([LabeledDatum('no', datum)])
+
+#    print classifier.get_status()
+#    print classifier.save("tutorial")
+#    print classifier.load("tutorial")
+#    print classifier.get_config()
+
+    #test
+    url_list = []
+    ret1 = []
+    ret2 = []
+    url_list = get_rss_data_from_catlist(usr,['it','popular','life','knowledge'])
+    for data in url_list:
+        title = data["title"]
+        datum = Datum({"message": title})
+        ans = classifier.classify([datum])
+        if ans != None:
+            estm = get_most_likely(ans[0])
+            if estm[0] == 'yes':
+                ret1.append(data)
+            else:
+                ret2.append(data)
+
+    print ret1
+    print ""
+    print ret2
     return ret1,ret2
 
 ##################################################################
@@ -280,17 +398,17 @@ def get_feed_list(feed_url):
             imageurl = m.group(1) if m.group(1) else NO_IMAGE_URL
             dic = {}
             dic["id"] = id
+            dic["title"] = re.sub("[,\"]","",e["title"])
             dic["link"] = e["link"]
             dic["uname"] = user
             dic["bookmarkcount"] = e['hatena_bookmarkcount']
-            dic["title"] = re.sub("[,\"]","",e["title"])
             dic["imageurl"] = imageurl
             url_list.append(dic)
             id += 1
         except:
             pass
 
-    return url_list,id
+    return url_list
 
 
 ##################################################################

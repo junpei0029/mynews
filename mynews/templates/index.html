@@ -79,6 +79,7 @@
                 <h1>We build websites & apps that people love!</h1>
                 <p>Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s.</p>
             </div>
+
             <div class="col-lg-4">
                 {% if url_list_2 %}
                 <p class="pull-right"><br><button type="button" class="btn btn-green codebtn">興味なしを表示する</button></p>
@@ -94,14 +95,22 @@
                 <div class="content1">
                     <ul class="grid effect-2" id="grid">
                         {% for item in url_list %}
-                        <li> {{ item.title }} <a href="{{ item.link }}" target="_blank"><img src="{{ item.imageurl }}"></a></li>
+                        <li> {{ item.title }} 
+                            <div class='pic'><a href="{{ item.link }}" target="_blank"><img src="{{ item.imageurl }}"></a>
+                                <div id='btn_{{ item.id }}' onclick='decide_interest("0","{{ item.title }}","{{ item.link }}","{{ item.imageurl }}");return false;'><img src="{{ url_for('static',filename='img/glyphicons_192_circle_remove.png') }}"></div>
+                            <div>
+                        </li>
                         {% endfor %}
                     </ul>
                 </div>
                 <div class="content2">
                     <ul class="grid effect-2" id="grid">
                         {% for item in url_list_2 %}
-                        <li> {{ item.title }} <a href="{{ item.link }}" target="_blank"><img src="{{ item.imageurl }}"></a></li>
+                        <li> {{ item.title }} 
+                            <div class='pic'><a href="{{ item.link }}" target="_blank"><img src="{{ item.imageurl }}"></a>
+                                <div id='btn_{{ item.id }}' onclick='decide_interest("1","{{ item.title }}","{{ item.link }}","{{ item.imageurl }}");return false;'><img src="{{ url_for('static',filename='img/glyphicons_190_circle_plus.png') }}"></div>
+                            <div>
+                        </li>
                         {% endfor %}
                     </ul>
                 </div>
@@ -318,6 +327,18 @@
         });
     </script>
 
+    <script type="text/javascript">
+        var request = new XMLHttpRequest;
+        function decide_interest(interestFlg,title,link,imageurl){
+            //alert(interestFlg);
+            //alert(title);
+            //alert(link);
+            //alert(imageurl);
+            request.open("POST","/decide_interest",true);
+            request.setRequestHeader("Content-Type",'x-www-form-urlencoded');
+            request.send(JSON.stringify({interestFlg:interestFlg,title:title,link:link,imageurl:imageurl}));
+        };
+    </script>
 
     <!-- スムーズスクロール部分の記述 -->
     <script>

@@ -125,7 +125,9 @@ def favorite():
     print "favorite start"
     user = g.user
     last_upd_time = htn.get_last_upd_time(user)
-    url_list,url_list_2 = htn.bayes_data(usr=user)
+    #url_list,url_list_2 = htn.bayes_data(usr=user)
+    url_list,url_list_2 = htn.get_classify_data(usr=user)
+    print url_list_2
     return render_template('index.html' ,url_list=url_list,url_list_2=url_list_2,user=user,last_upd_time=last_upd_time)
 
 @app.route('/del_data')
@@ -143,6 +145,20 @@ def rss(category):
     user = g.user
     last_upd_time = htn.get_last_upd_time(user)
     url_list = htn.get_rss_data(usr=user,category=category)
+    return render_template('index.html' ,url_list=url_list,user=user,last_upd_time=last_upd_time)
+
+@app.route('/decide_interest',methods=['POST'])
+@login_required
+def decide_interest():
+    print "decide_interest start"
+    json_data = json.loads(request.data)
+    interestFlg=json_data['interestFlg']
+    title=json_data['title']
+    link=json_data['link']
+    imageurl=json_data['imageurl']
+    user = g.user
+    last_upd_time = htn.get_last_upd_time(user)
+    url_list = htn.decide_interest(usr=user,li=json_data)
     return render_template('index.html' ,url_list=url_list,user=user,last_upd_time=last_upd_time)
 
 ##################################################################

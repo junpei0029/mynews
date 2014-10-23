@@ -4,3 +4,4 @@ multiprocessing
 oauth2
 BeautifulSoup
 numpy
+Flask-Script

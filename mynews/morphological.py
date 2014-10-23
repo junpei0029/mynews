@@ -14,6 +14,6 @@ def split(sentence, appid=APPID, results="ma", filter="9|10"):
   params = urllib.urlencode({'appid':appid, 'results':results, 'filter':filter,'sentence':sentence})
   results = urllib2.urlopen(PAGEURL, params)
   soup = BeautifulSoup(results.read())
-  
+
   return [w.surface.string for w in soup.ma_result.word_list]
 

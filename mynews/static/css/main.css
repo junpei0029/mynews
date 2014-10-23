@@ -556,3 +556,15 @@ hr {
     opacity: 1;
 }
 }
+.pic{
+    position:relative;
+}
+div[id*="btn_"] {
+    position:absolute;
+    z-index:100;
+    top:10px;
+    right:10px;
+    width: 26px;
+}
+
+
