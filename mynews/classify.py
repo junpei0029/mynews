@@ -90,16 +90,3 @@ if __name__ == '__main__':
                 result = "NG"
             print result + "," + label + ", " + estm[0] + ", " + str(estm[1])
 
-#    for line in open('test.dat'):
-#        label, file = line[:-1].split(',')
-#        dat = open(file).read()        
-#        datum = Datum({"message": dat})
-#        ans = classifier.classify([datum])
-#        if ans != None:
-#            estm = get_most_likely(ans[0])
-#            if (label == estm[0]):
-#                result = "OK"
-#            else:
-#                result = "NG"
-#            print result + "," + label + ", " + estm[0] + ", " + str(estm[1])
-

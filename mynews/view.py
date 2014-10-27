@@ -182,9 +182,8 @@ def get_user_inf():
 ##################################################################
 if __name__ == '__main__':
     #app.run(port=8090,debug=True)
+    #port = int(os.environ.get("PORT", 61234))
     port = int(os.environ.get("PORT", 5000))
     app.run(host='0.0.0.0', port=port,debug=True)
-    #app.run(host='0.0.0.0', port=port)
-
-
+    #app.run(host='153.121.74.93', port=port,debug=False)
 
