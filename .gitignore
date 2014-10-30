@@ -4,4 +4,3 @@ lib/
 *.pyc
 .Python
 link
-config.py
