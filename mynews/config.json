@@ -13,9 +13,9 @@
       "bigram":  { "method": "ngram", "char_num": "2" },
       "mecab": {
         "method": "dynamic",
-        "path": "libmecab_splitter.0.6.2.dylib",
+        "path": "libmecab_splitter.0.6.2.so",
         "function": "create",
-        "arg": "-d /Users/junpei0029/App/mynews/mecab-ipadic-2.7.0-20070801"
+        "arg": "-d mynews/mecab-ipadic-2.7.0-20070801"
       }
     },
     "string_rules": [
