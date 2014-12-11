@@ -5,7 +5,7 @@ import sys,os
 import hatena as htn
 from multiprocessing import Process
 from oauth2 import Token,Consumer,Client
-from flask import request,session,redirect,url_for,g
+from flask import request,session,redirect,url_for,g,jsonify
 import urlparse
 import json
 from functools import wraps
@@ -160,6 +160,15 @@ def decide_interest():
     last_upd_time = htn.get_last_upd_time(user)
     url_list = htn.decide_interest(usr=user,li=json_data)
     return render_template('index.html' ,url_list=url_list,user=user,last_upd_time=last_upd_time)
+
+@app.route('/favorite/<user_id>', methods=['GET'])
+def read(user_id):
+
+    user = {'display_name':user_id}
+    url_list,url_list_2 = htn.get_classify_data(usr=user)
+    response = jsonify({"url_list":url_list_2})
+    response.status_code = 200
+    return response
 
 ##################################################################
 # methods
