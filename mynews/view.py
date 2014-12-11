@@ -166,7 +166,7 @@ def read(user_id):
 
     user = {'display_name':user_id}
     url_list,url_list_2 = htn.get_classify_data(usr=user)
-    response = jsonify({"url_list":url_list_2})
+    response = jsonify({"url_list":url_list})
     response.status_code = 200
     return response
 
