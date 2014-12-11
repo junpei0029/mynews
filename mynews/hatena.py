@@ -14,7 +14,6 @@ import bayes
 from jubatus.classifier.client import Classifier
 from jubatus.classifier.types import LabeledDatum
 from jubatus.common import Datum
-import requests
 
 reload(sys)
 sys.setdefaultencoding("utf-8")
@@ -441,6 +440,7 @@ def add_bookmark(feed_url,access_token):
 #    print response
 #    the_page = response.read()
 #    print the_page
+
 
 
 ##################################################################
