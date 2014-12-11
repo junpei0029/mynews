@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from urllib import urlencode
 import urllib2
 import feedparser
 import json
@@ -13,6 +14,7 @@ import bayes
 from jubatus.classifier.client import Classifier
 from jubatus.classifier.types import LabeledDatum
 from jubatus.common import Datum
+import requests
 
 reload(sys)
 sys.setdefaultencoding("utf-8")
@@ -409,6 +411,36 @@ def get_feed_list(feed_url):
             pass
 
     return url_list
+
+##################################################################
+# ブックマーク登録
+##################################################################
+def add_bookmark(feed_url,access_token):
+
+    #url = u'http://api.b.hatena.ne.jp/1/my/bookmark'
+    url = 'http://b.hatena.ne.jp/junpei0029/add.confirm'
+
+    oauth_token = access_token['oauth_token']
+    oauth_token_secret = access_token['oauth_token_secret']
+
+    #post_data = {'url':feed_url, 'oauth_token':oauth_token,'oauth_token_secret':oauth_token_secret}
+    post_data = {'url':feed_url}
+    data = urlencode(post_data)
+
+    return url + '?' + data
+
+#    print data
+#    r = requests.get(url, data=data)
+#    #r.add_header('Authorization', 'Bearer %s' % access_token)
+#    print r.text
+
+
+    # Web情報取得の準備
+#    params = urllib.urlencode({'url':feed_url, 'oauth_token':oauth_token,'oauth_token_secret':oauth_token_secret})
+#    response = urllib.urlopen(url, params)
+#    print response
+#    the_page = response.read()
+#    print the_page
 
 
 ##################################################################

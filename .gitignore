@@ -4,3 +4,5 @@ lib/
 *.pyc
 .Python
 link
+train_data_*.csv
+*_local.*

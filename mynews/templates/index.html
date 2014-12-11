@@ -37,11 +37,11 @@
 	<nav class="menu" id="theMenu">
 		<div class="menu-wrap">
             <h1 class="logo"><a href="/">{{ user.display_name }}</a></h1>
-            <h1 class="logo"><a href="/">{{ last_upd_time }}</a></h1>
+            <h1 class="logo"><a href="/favorite">おすすめ</a></h1>
 			<i class="fa fa-arrow-right menu-close"></i>
 			<a href="/">ホーム</a>
 			<a href="/bookmark">ブックマーク</a>
-			<a href="/favorite">おすすめ</a>
+            <!--<a href="/favorite">おすすめ</a>-->
 			<a href="/rss/popular">人気</a>
 			<a href="/rss/it">IT</a>
 			<a href="/rss/knowledge">学び</a>
@@ -98,7 +98,9 @@
                         {% if url_list_2 %}
                         <li> {{ item.title }}
                             <div class='pic'><a href="{{ item.link }}" target="_blank"><img src="{{ item.imageurl }}"></a>
-                                <div id='btn_{{ item.id }}' onclick='decide_interest("0","{{ item.title }}","{{ item.link }}","{{ item.imageurl }}");return false;'><img src="{{ url_for('static',filename='img/glyphicons_192_circle_remove.png') }}"></div>
+                                <!--<div id='btn_{{ item.id }}' onclick='decide_interest("1","{{ item.title }}","{{ item.link }}","{{ item.imageurl }}");return false;'><img src="{{ url_for('static',filename='img/glyphicons_192_circle_remove.png') }}"></div>
+                                -->
+                                <div id='btn_{{ item.id }}' onclick='decide_interest("1","{{ item.title }}","{{ item.link }}","{{ item.imageurl }}");return false;'><img src="{{ url_for('static',filename='img/glyphicons_190_circle_plus.png') }}"></div>
                             <div>
                         </li>
                         {% else %}
@@ -122,10 +124,9 @@
                         {% endfor %}
                     </ul>
                 </div>
-	    	</div><!-- row -->
-	    </div><!-- container -->
+            </div><!-- row -->
+        </div><!-- container -->
     </div><!-- portfolio -->
-
 
 	<!-- SERVICES SECTION -->
 	<div id="services">
@@ -345,6 +346,58 @@
                 alert("嫌いな記事として登録しました。");
             }
         };
+
+        function add_bookmark(bookmarkurl){
+            alert(bookmarkurl);
+            request.open("POST",'/add_bookmark',true);
+            //request.setRequestHeader("Access-Control-Allow-Origin", "*");
+            //request.setRequestHeader("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+            request.setRequestHeader("Content-Type",'x-www-form-urlencoded');
+            request.send(JSON.stringify({feed_url:bookmarkurl}));
+            //request.send(EncodeHTMLForm({url:bookmarkurl}));
+
+            //var json = request.responseText;
+            //var obj = eval( "(" + {url:bookmarkurl} + ")" );
+            //alert(obj); // 取ってきたデータから名前(name)を表示
+
+            ////request.send(JSON.stringify({url:url,oauth_token:oauth_token,oauth_token_secret:oauth_token_secret}));
+            //var length = request.getResponseHeader("Content-Length");
+            //alert(length);
+
+            //var element = document.createElement("script"); // script タグを生成
+            //element.src = "http://api.b.hatena.ne.jp/1/my/bookmark?callback=getJSON";
+            //document.body.appendChild(element); // body にノードを追加(この時点で読み込み:非同期)
+
+            //var obj;
+            //function getJSON(json) {
+            //    obj = json;
+            //    alert(obj);
+            //}
+
+            //$.ajax({
+            //    url: '/add_bookmark',
+            //    type: 'POST',
+            //    data: {feed_url:bookmarkurl},
+            //    //dataType: 'jsonp',
+            //    //jsonp: 'callback',
+            //    timeout: 10000,
+            //    success: function(data) {
+            //    //取得成功時の処理
+            //        console.log("SUCCESS");
+            //    },
+            //    error: function(data) {
+            //        //取得失敗時の処理
+            //        console.log("ERROR");
+            //    },
+            //    complete: function(data) {
+            //        //最後に実行する処理
+            //        console.log("COMPLETE");
+            //    }
+            //});
+        };
+
+
+
     </script>
 
     <!-- スムーズスクロール部分の記述 -->
@@ -366,6 +419,9 @@
        });
     });
     </script>
+
+
+
 
 
   </body>

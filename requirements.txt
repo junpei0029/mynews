@@ -6,3 +6,4 @@ BeautifulSoup
 numpy
 Flask-Script
 jubatus
+urllib
