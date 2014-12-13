@@ -404,6 +404,8 @@ def add_bookmark(feed_url,access_token):
 #    print r.text
 
 
+
+
     # Web情報取得の準備
 #    params = urllib.urlencode({'url':feed_url, 'oauth_token':oauth_token,'oauth_token_secret':oauth_token_secret})
 #    response = urllib.urlopen(url, params)
