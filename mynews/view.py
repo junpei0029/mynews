@@ -10,17 +10,22 @@ import urlparse
 import json
 from functools import wraps
 
+import smtplib
+from email.MIMEText import MIMEText
+from email.Header import Header
+from email.Utils import formatdate
+from smtplib import SMTP_SSL
+from datetime import datetime as dt
+
 app = Flask(__name__)
 app.secret_key = 'why would I tell you my secret key?'
 
-if os.environ.get('CONSUMER_KEY') and os.environ.get('CONSUMER_SECRET'):
-    CONSUMER_KEY = os.environ.get('CONSUMER_KEY')
-    CONSUMER_SECRET = os.environ.get('CONSUMER_SECRET')
-else:
-    import config
-    app.config.from_object("config.DevelopConfig")
-    CONSUMER_KEY = app.config['CONSUMER_KEY']
-    CONSUMER_SECRET = app.config['CONSUMER_SECRET']
+import config
+app.config.from_object("config.DevelopConfig")
+CONSUMER_KEY = app.config['CONSUMER_KEY']
+CONSUMER_SECRET = app.config['CONSUMER_SECRET']
+FROM_MAIL_ADDRESS = app.config['FROM_MAIL_ADDRESS']
+FROM_MAIL_PASSWORD = app.config['FROM_MAIL_PASSWORD']
 
 #hatenaOauth
 REQUEST_TOKEN_URL = 'https://www.hatena.com/oauth/initiate'
@@ -164,8 +169,23 @@ def decide_interest():
 @app.route('/favorite/<user_id>', methods=['GET'])
 def read(user_id):
 
+    print "favorite/%s start" % user_id
     user = {'display_name':user_id}
     url_list,url_list_2 = htn.get_classify_data(usr=user)
+    mailtext = createMailText(url_list)
+
+    tdatetime = dt.now()
+    tstr = tdatetime.strftime('%Y/%m/%d')
+
+    mailheader = u'Link %s'% (tstr)
+    from_addr = "junpei.k.29@gmail.com"
+    to_addr = "junpei.k.29@gmail.com"
+
+    msg = create_message(from_addr, to_addr, mailheader, mailtext, 'UTF-8')
+    print "create_message finish"
+    send_via_gmail(from_addr, to_addr, msg)
+    print "favorite/%s finish" % user_id
+
     response = jsonify({"url_list":url_list})
     response.status_code = 200
     return response
@@ -185,6 +205,31 @@ def get_user_inf():
         if content != 'oauth_problem=token_rejected':
             user = json.loads(content)
     return user
+
+def createMailText(url_list):
+    text = u"""<h2>あなたのおすすめ記事</h2>
+    """
+    for i in url_list:
+        text = text + (u"""<a href="%s"><p>%s</p></a>
+            """) % (i["link"],i["title"])
+    return text
+
+def create_message(from_addr, to_addr, subject, body, encoding):
+    # 'text/plain; charset="encoding"'というMIME文書を作ります
+    msg = MIMEText(body, 'html', encoding)
+    msg['Subject'] = Header(subject, encoding)
+    msg['From'] = from_addr
+    msg['To'] = to_addr
+    msg['Date'] = formatdate()
+    return msg
+
+def send_via_gmail(from_addr, to_addr, msg):
+    print "send via SSL..."
+    s = SMTP_SSL('smtp.gmail.com', 465)
+    s.login(FROM_MAIL_ADDRESS, FROM_MAIL_PASSWORD)
+    s.sendmail(from_addr, [to_addr], msg.as_string())
+    s.close()
+    print 'mail sent!'
 
 ##################################################################
 # メイン

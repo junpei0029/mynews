@@ -10,7 +10,6 @@ import random
 from sets import Set
 import os
 import datetime
-import bayes
 from jubatus.classifier.client import Classifier
 from jubatus.classifier.types import LabeledDatum
 from jubatus.common import Datum
@@ -269,35 +268,6 @@ def get_rss_data_from_catlist(usr,category_list):
 
     return url_list
 
-
-##################################################################
-# ベイズ
-##################################################################
-def bayes_data(usr):
-    user = usr['display_name']
-    print user
-
-    url_list = []
-    feed_url = RSS_URL['popular']
-    url_list = get_feed_list(feed_url)
-    targets = [data["title"] for data in url_list]
-    print "targets:%s" %(targets)
-    ret = bayes.judge_target(targets)
-    print "ret:%s" %(ret)
-
-    ret1 = []
-    ret2 = []
-    for i in ret:
-        print "i:%s" %(i)
-        for j in url_list:
-            if i[1] == j["title"]:
-                if i[0] == 'yes':
-                    j["title"] = '［興味あり］' + i[1]
-                    ret1.append(j)
-                else:
-                    j["title"] = '［興味なし］' + i[1]
-                    ret2.append(j)
-    return ret1,ret2
 
 ##################################################################
 # jubatus
