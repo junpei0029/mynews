@@ -178,7 +178,7 @@ def read(user_id):
     tstr = tdatetime.strftime('%Y/%m/%d')
 
     mailheader = u'Link %s'% (tstr)
-    from_addr = "junpei.k.29@gmail.com"
+    from_addr = FROM_MAIL_ADDRESS
     to_addr = "junpei.k.29@gmail.com"
 
     msg = create_message(from_addr, to_addr, mailheader, mailtext, 'UTF-8')
