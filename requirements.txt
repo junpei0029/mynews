@@ -7,3 +7,4 @@ numpy
 Flask-Script
 jubatus
 urllib
+mysql-python

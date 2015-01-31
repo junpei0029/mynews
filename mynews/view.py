@@ -99,9 +99,8 @@ def on_auth():
 def index():
     print "index start"
     user = g.user
-    last_upd_time = htn.get_last_upd_time(user)
     url_list = htn.data_reader(usr=user)
-    return render_template('index.html' ,url_list=url_list,user=user,last_upd_time=last_upd_time)
+    return render_template('index.html' ,url_list=url_list,user=user)
 
 @app.route('/analyze')
 @login_required
@@ -111,29 +110,26 @@ def analyze():
     user = g.user
     process = Process(target=htn.analyze_hatebu,args=(user,))
     process.start()
-    last_upd_time = htn.get_last_upd_time(user)
     url_list = htn.data_reader(usr=user)
-    return render_template('index.html' ,url_list=url_list,user=user,last_upd_time=last_upd_time)
+    return render_template('index.html' ,url_list=url_list,user=user)
 
 @app.route('/bookmark')
 @login_required
 def bookmark():
     print "bookmark start"
     user = g.user
-    last_upd_time = htn.get_last_upd_time(user)
     url_list = htn.data_reader_bookmark(usr=user)
-    return render_template('index.html' ,url_list=url_list,user=user,last_upd_time=last_upd_time)
+    return render_template('index.html' ,url_list=url_list,user=user)
 
 @app.route('/favorite')
 @login_required
 def favorite():
     print "favorite start"
     user = g.user
-    last_upd_time = htn.get_last_upd_time(user)
     #url_list,url_list_2 = htn.bayes_data(usr=user)
     url_list,url_list_2 = htn.get_classify_data(usr=user)
     print url_list_2
-    return render_template('index.html' ,url_list=url_list,url_list_2=url_list_2,user=user,last_upd_time=last_upd_time)
+    return render_template('index.html' ,url_list=url_list,url_list_2=url_list_2,user=user)
 
 @app.route('/del_data')
 @login_required
@@ -148,9 +144,8 @@ def del_data():
 def rss(category):
     print "rss start"
     user = g.user
-    last_upd_time = htn.get_last_upd_time(user)
     url_list = htn.get_rss_data(usr=user,category=category)
-    return render_template('index.html' ,url_list=url_list,user=user,last_upd_time=last_upd_time)
+    return render_template('index.html' ,url_list=url_list,user=user)
 
 @app.route('/decide_interest',methods=['POST'])
 @login_required
@@ -162,9 +157,8 @@ def decide_interest():
     link=json_data['link']
     imageurl=json_data['imageurl']
     user = g.user
-    last_upd_time = htn.get_last_upd_time(user)
     url_list = htn.decide_interest(usr=user,li=json_data)
-    return render_template('index.html' ,url_list=url_list,user=user,last_upd_time=last_upd_time)
+    return render_template('index.html' ,url_list=url_list,user=user)
 
 @app.route('/favorite/<user_id>', methods=['GET'])
 def read(user_id):

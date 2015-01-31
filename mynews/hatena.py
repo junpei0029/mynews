@@ -13,6 +13,8 @@ import datetime
 from jubatus.classifier.client import Classifier
 from jubatus.classifier.types import LabeledDatum
 from jubatus.common import Datum
+import MySQLdb
+from MySQLdb.cursors import DictCursor
 
 reload(sys)
 sys.setdefaultencoding("utf-8")
@@ -24,7 +26,6 @@ sys.setdefaultencoding("utf-8")
 
 r = re.compile('"(http://cdn-ak.b.st-hatena.com/entryimage/.*?)"')
 NO_IMAGE_URL = "http://images-jp.amazon.com/images/G/09/nav2/dp/no-image-no-ciu._SS200_.gif"
-OFLD = "mynews/csv/train_data_"
 user = "junpei0029"
 RSS_URL = {'popular':'http://feeds.feedburner.com/hatena/b/hotentry',
             'it':'http://b.hatena.ne.jp/hotentry/it.rss',
@@ -35,7 +36,6 @@ RSS_URL = {'popular':'http://feeds.feedburner.com/hatena/b/hotentry',
             'entertainment':'http://b.hatena.ne.jp/hotentry/entertainment.rss',
             'game':'http://b.hatena.ne.jp/hotentry/game.rss',
             }
-
 
 
 ##################################################################
@@ -123,14 +123,9 @@ def analyze_hatebu(usr=None):
 #        if count < 80: break # 同じブックマーク数が100より少ない場合break
 
     print len(url_list)
-    # ファイルの出力
-
-    fout = open(OFLD + user + ".csv","w")
-    writer = csv.writer(fout,delimiter=",")
-    #writer.writerow(["id","url","user","count","title","imageurl"])
-    for t in url_list:
-        writer.writerow(t)
-    fout.close()
+    
+    #DB登録
+    batchinsert_interrest_blog(url_list)
     print 'anylaze finish'
 
 ##################################################################
@@ -142,29 +137,26 @@ def data_reader(mybookmarkflg=False,usr=None):
     user = usr['display_name']
     print user
 
-    path = OFLD + user + ".csv"
-    print path
-    if not os.path.exists(path):
-        return get_rss_data(usr,'popular')
-
-    f = open(path, 'rb')
-    data_reader = csv.reader(f)
     temp_list = []
     ret = []
     random_set = Set([])
 
+    data_reader = select_Interrest_Blog(user)
+    if not data_reader:
+        return get_rss_data(usr,'popular')
+
     cnt = 0
-    for i,data in enumerate(data_reader):
-        if (mybookmarkflg and data[1] != user):
+    for data in data_reader:
+        if (mybookmarkflg and data["USER_NAME"] != user):
             continue
         dic = {}
-        dic["id"] = data[0]
-        dic["uname"] = data[1]
-        dic["category"] = data[2]
-        dic["title"] = data[3]
-        dic["link"] = data[4]
-        dic["bookmarkcount"] = data[5]
-        dic["imageurl"] = data[6]
+        dic["id"] = data["INTERREST_ID"]
+        dic["uname"] = data["USER_NAME"]
+        dic["category"] = data["CATEGORY"]
+        dic["title"] = data["TITLE"]
+        dic["link"] = data["LINK"]
+        dic["bookmarkcount"] = data["BOOKMARKCOUNT"]
+        dic["imageurl"] = data["IMAGEURL"]
         temp_list.append(dic)
         cnt = cnt + 1
 
@@ -188,36 +180,6 @@ def data_reader(mybookmarkflg=False,usr=None):
 def data_reader_bookmark(usr):
     return data_reader(mybookmarkflg=True,usr=usr)
 
-##################################################################
-# 最終更新日時
-##################################################################
-def get_last_upd_time(usr):
-    user = usr['display_name']
-    print user
-
-    path = OFLD + user + ".csv"
-    if not os.path.exists(path):
-        return
-    stat = os.stat(path)
-    last_modified = stat.st_mtime
-    dt = datetime.datetime.fromtimestamp(last_modified)
-    print(dt.strftime("%Y-%m-%d %H:%M:%S"))  # Print 2011-05-30 17:48:12
-
-    return dt.strftime("%Y-%m-%d %H:%M:%S")
-
-##################################################################
-# データ削除（テスト用）
-##################################################################
-def del_data(usr):
-    user = usr['display_name']
-    print user
-    path = OFLD + user + ".csv"
-    if os.path.exists(path):
-        print "delete :" + path
-        os.remove(path)
-    else:
-        print "already delete :" + path
-
 
 ##################################################################
 # ユーザ判断追加
@@ -226,19 +188,9 @@ def decide_interest(usr,li):
     print 'hatena.decide_interest'
 
     user = usr['display_name']
-    li.update({"id":99999 , "uname":user , "bookmarkcount":1})
-
     category = 'yes' if li['interestFlg'] == '1' else 'no'
-    row = [99999,li['uname'],category,li['title'],li['link'],1,li['imageurl']]
+    insert_interrest_blog(user,category,li['title'],li['link'],1,li['imageurl'])
 
-    print row
-    path = OFLD + user + ".csv"
-    if not os.path.exists(path):
-        return
-    fout = open(path,"a")
-    writer = csv.writer(fout,delimiter=",")
-    writer.writerow(row)
-    fout.close()
     return data_reader(usr=usr)
 
 ##################################################################
@@ -306,14 +258,13 @@ def get_classify_data(usr):
     classifier = Classifier(options.server_ip,options.server_port, options.name, 10.0)
 
     #train
-    path = OFLD + user + ".csv"
-    fb = open(path, 'rb')
-    data_reader = csv.reader(fb)
-    for i,data in enumerate(data_reader):
-        label = data[2]
-        dat = data[3]
+    data_reader = select_Interrest_Blog(user)
+    for row in data_reader:
+        label = row['CATEGORY']
+        dat = row['TITLE']
         datum = Datum({"message": dat})
         classifier.train([LabeledDatum(label, datum)])
+
 
     url_list = []
     url_list = get_rss_data_from_catlist(usr,['social','fun','entertainment','game'])
@@ -327,7 +278,6 @@ def get_classify_data(usr):
 #    print classifier.load("tutorial")
 #    print classifier.get_config()
 
-    #test
     url_list = []
     ret1 = []
     ret2 = []
@@ -346,6 +296,7 @@ def get_classify_data(usr):
     print ret1
     print ""
     print ret2
+
     return ret1,ret2
 
 ##################################################################
@@ -380,6 +331,82 @@ def get_feed_list(feed_url):
             pass
 
     return url_list
+
+##################################################################
+# DB接続
+##################################################################
+
+def db_connect():
+    con = MySQLdb.connect(host='localhost', db='mynews', user='root', passwd='root')
+    return con
+
+def db_close(con):
+    con.close()
+
+def select_Interrest_Blog(user):
+    con = db_connect();
+    sql = """
+        SELECT
+            *
+        FROM INTERREST_BLOG IB
+        WHERE IB.USER_NAME = '%s'
+        ;
+    """ % user
+    try:
+        cur = con.cursor(DictCursor)                       # connectionから取得したcursorからsqlを発行する
+        print cur.execute(sql)                             # executeは行数を返却
+        res = cur.fetchall()                               # fetchone, fetchmany, fetchallで結果取得
+        return res
+    finally:
+        cur.close()
+        db_close(con)
+    return []
+
+def insert_interrest_blog(user,category,title,link,bookmarkcount,imageurl):
+    con = db_connect();
+    sql = """
+        INSERT INTO INTERREST_BLOG (
+            USER_NAME
+            ,CATEGORY
+            ,TITLE
+            ,LINK
+            ,BOOKMARKCOUNT
+            ,IMAGEURL
+            ,TOROKU_DATE
+        )
+        VALUES('%s','%s','%s','%s','%s','%s','%s')
+        ;
+    """ % (user,category,title,link,bookmarkcount,imageurl,datetime.datetime.now())
+    with con as cur:
+        cur.execute(sql)
+
+def batchinsert_interrest_blog(feed_list):
+    con = db_connect();
+
+    try:
+        for li in feed_list:
+            cur = con.cursor()
+            sql = """
+                INSERT INTO INTERREST_BLOG (
+                    USER_NAME
+                    ,CATEGORY
+                    ,TITLE
+                    ,LINK
+                    ,BOOKMARKCOUNT
+                    ,IMAGEURL
+                    ,TOROKU_DATE
+                )
+                VALUES('%s','%s','%s','%s','%s','%s','%s')
+                ;
+            """ % (li[1],li[2],li[3],li[4],li[5],li[6],datetime.datetime.now())
+            cur.execute(sql)
+            cur.close()
+    finally:
+        con.commit()
+        cur.close()
+        db_close(con)
+
+
 
 ##################################################################
 # ブックマーク登録
