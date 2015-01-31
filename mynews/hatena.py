@@ -186,7 +186,6 @@ def data_reader_bookmark(usr):
 ##################################################################
 def decide_interest(usr,li):
     print 'hatena.decide_interest'
-
     user = usr['display_name']
     category = 'yes' if li['interestFlg'] == '1' else 'no'
     insert_interrest_blog(user,category,li['title'],li['link'],1,li['imageurl'])
