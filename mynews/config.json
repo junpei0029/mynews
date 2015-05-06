@@ -15,7 +15,7 @@
         "method": "dynamic",
         "path": "libmecab_splitter.so.0.6.4",
         "function": "create",
-        "arg": "-d mecab-ipadic-2.7.0-20070801"
+        "arg": "-d /opt/apps/mynews/mecab-ipadic-2.7.0-20070801"
       }
     },
     "string_rules": [
