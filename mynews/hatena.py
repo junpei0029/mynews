@@ -19,6 +19,9 @@ from MySQLdb.cursors import DictCursor
 reload(sys)
 sys.setdefaultencoding("utf-8")
 
+DATABASE_HOST = '153.121.74.93'
+#DATABASE_HOST = 'localhost'
+
 
 ##################################################################
 # フィールド
@@ -336,7 +339,7 @@ def get_feed_list(feed_url):
 ##################################################################
 
 def db_connect():
-    con = MySQLdb.connect(host='localhost', db='mynews', user='root', passwd='root')
+    con = MySQLdb.connect(host=DATABASE_HOST, db='mynews', user='root', passwd='root')
     return con
 
 def db_close(con):
