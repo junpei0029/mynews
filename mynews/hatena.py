@@ -19,7 +19,8 @@ from MySQLdb.cursors import DictCursor
 reload(sys)
 sys.setdefaultencoding("utf-8")
 
-DATABASE_HOST = '153.121.74.93'
+DATABASE_HOST = 'www8079up.sakura.ne.jp'
+#DATABASE_HOST = '153.121.74.93'
 #DATABASE_HOST = 'localhost'
 
 ##################################################################
