@@ -378,7 +378,7 @@ def insert_interrest_blog(user,category,title,link,bookmarkcount,imageurl):
         )
         VALUES('%s','%s','%s','%s','%s','%s','%s')
         ;
-    """ % (user,category,title,link,bookmarkcount,imageurl,datetime.datetime.now())
+    """.encode() % (user,category,title,link,bookmarkcount,imageurl,datetime.datetime.now())
     with con as cur:
         cur.execute(sql)
 
