@@ -366,7 +366,7 @@ def select_Interrest_Blog(user):
 
 def insert_interrest_blog(user,category,title,link,bookmarkcount,imageurl):
     con = db_connect();
-    sql = """
+    sql = u"""
         INSERT INTO INTERREST_BLOG (
             USER_NAME
             ,CATEGORY
