@@ -365,6 +365,7 @@ def select_Interrest_Blog(user):
     return []
 
 def insert_interrest_blog(user,category,title,link,bookmarkcount,imageurl):
+    print_with_time('insert_interrest_blog start')
     con = db_connect();
     sql = u"""
         INSERT INTO INTERREST_BLOG (
@@ -378,9 +379,11 @@ def insert_interrest_blog(user,category,title,link,bookmarkcount,imageurl):
         )
         VALUES('%s','%s','%s','%s','%s','%s','%s')
         ;
-    """.encode() % (user,category,title,link,bookmarkcount,imageurl,datetime.datetime.now())
+    """ % (user,category,title,link,bookmarkcount,imageurl,datetime.datetime.now())
     with con as cur:
         cur.execute(sql)
+    con = db_connect();
+    print_with_time('insert_interrest_blog end')
 
 def batchinsert_interrest_blog(feed_list):
     con = db_connect();
@@ -443,6 +446,12 @@ def add_bookmark(feed_url,access_token):
 #    print the_page
 
 
+##################################################################
+# 標準出力（タイムスタンプ付き）
+##################################################################
+def print_with_time(content):
+    print str(datetime.datetime.now()) + ' : '+ str(content)
+    
 
 ##################################################################
 # メイン
